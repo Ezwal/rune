@@ -10,6 +10,10 @@ canvas.height = window.innerHeight - 20
 let shapes = []
 let currentShape = undefined
 
+const blankCanvas = () => {
+    ctx.fillStyle = 'white'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+}
 const beginDrawing = (x, y) => {
     ctx.lineWidth = 5
     ctx.strokeStyle = 'black'
@@ -38,16 +42,16 @@ const finishDrawing = () => {
 const eraseLastShape = () => {
     const shapesLength = shapes.filter(el => el).length
     if (shapesLength === 0 || currentShape) { return }
-    const last = shapes[shapesLength-1]
 
-    ctx.strokeStyle = 'white'
-    ctx.lineWidth = 6 // this looks definitly very fucking hacky TODO change? also I doesnt work for sure... too bad!
-
-    ctx.beginPath()
-    last.forEach(([x, y]) => ctx.lineTo(x, y))
-    ctx.stroke()
+    blankCanvas()
     shapes = shapes.slice(0, shapesLength-1).filter(el => el)
-    console.log(shapes);
+    ctx.strokeStyle = 'black'
+    ctx.lineWidth = 5
+    shapes.forEach(shape => {
+        ctx.beginPath()
+        shape.forEach(([x, y]) => ctx.lineTo(x, y))
+        ctx.stroke()
+    })
 }
 
 function handleShapes() {
@@ -57,8 +61,12 @@ function handleShapes() {
             : beginDrawing(e.offsetX, e.offsetY)
     })
 
-    canvas.addEventListener('mouseup', e => finishDrawing())
-    canvas.addEventListener('mousemove', e => continueDrawing(e.pageX, e.pageY))
+    canvas.addEventListener('mouseup', e => {
+        if (e.buttons === 0 && currentShape) {
+            finishDrawing()
+        }
+    })
+    canvas.addEventListener('mousemove', e => continueDrawing(e.offsetX, e.offsetY))
 }
 
 const drawShapeComparison = (shapeA, shapeB) => {
